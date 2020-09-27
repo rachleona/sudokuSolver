@@ -256,18 +256,22 @@ const findUnique = row => {
     }).filter( v => v )
 
     blanks.map( ({ value, index }, i) => {
+        //foreach possible number 
         value.split("").map( num => {
             let rep = false
+            // check if possibility is unique
             for(let x = 0; x < blanks.length; x++)
             {
                 if(x == i) continue
+                //possibility not unique, break loop
                 if(blanks[x].value.includes(num))
                 {
                     rep = true
                     break
                 }
             }
-
+            
+            //unique possibility!
             if(!rep)
             {
                 blanks[i].value = num
