@@ -174,20 +174,52 @@ const checkPossibles = sudoku => {
 
     newSudoku = checkPalace(checkCol(newSudoku))
 
-    // const done = sudoku.some( (row, i) => {
-    //     return !row.some( (val, index) => {
-    //         return val !== newSudoku[i][index]
-    //     })
-    // })
-
     const done = deepCompare(newSudoku, sudoku)
 
     if(done)
     {
         //TODO find unique and replace with unique
+        newSudoku.map( row => findUnique(row) )
+
+        for(let i = 0; i < 9; i++)
+        {   
+            // create one dimensional array from column
+            let col = newSudoku.map( row => row[i] )
+            col = findUnique(col)
+            col.map( (num, index) => {
+                newSudoku[index][i] = num
+            })
+        }
+
+        let rows
+        for(let r = 0; r < 9; r+=3)
+        {   
+            // get three rows starting from 0/3/6
+            rows = [newSudoku[r], newSudoku[r+1], newSudoku[r+2]]
+            let palace
+            for(let c = 0; c < 9; c+=3)
+            {
+                // get from rows the content in cols starting from 0/3/6 then reduce to one dimension
+                palace = rows.map( row => [row[c], row[c+1], row[c+2]] ).reduce((acc, cur) => [...acc, ...cur], [])
+                palace = findUnique(palace)
+    
+                // return palace to respective slots in sudoku
+                palace.map( (num, index) => {
+                    // get row category => i + r will be the row it was originally from and (index - i*3) + c will be the original col
+                    let i = Math.floor(index / 3)
+                    if(!newSudoku[i+r])
+                    {
+                        newSudoku[i+r] = []
+                    }
+    
+                    newSudoku[i+r][(index-i*3)+c] = num
+                })
+            }
+        }
+
     }
 
-    return { s: newSudoku, d: done }
+    return { s: newSudoku, d: deepCompare(newSudoku, sudoku) }
 }
 
 const deepCompare = (arr1, arr2) => {
@@ -211,15 +243,39 @@ const deepCompare = (arr1, arr2) => {
     return res
 }
 
-//checkRow([5, "34", 2, "1346", 7, "13468", "19", "169", "16"])
+const findUnique = row => {
+    //get blanks in a row
+    const newRow = []
 
+    const blanks = row.map( (value, index) => {
+        newRow[index] = value
+        if(typeof value == "string")
+        {
+            return { value, index }
+        }
+    }).filter( v => v )
 
-console.log(checkPossibles([ [3, 9, 1, 4, 2, 8, 5, 7, 6],
-                    [8, 7, 6, 1, 3, 5, "", 2, ""],
-                    [2, 4, "", 7, 9, 6, "", 3, ""],
-                    [7, 6, 3, 5, 1, "", "", 4, 2],
-                    [1, 8, 4, "", "", 2, "", 5, ""],
-                    [5, 2, 9, 3, 8, 4, "", "", 7],
-                    ["", 3, "", "", "", "", "", 8, ""],
-                    ["", "", 2, 8, 5, 3, "", 9, ""],
-                    ["", 5, "", "", 4, "", "", "", ""]]))
+    blanks.map( ({ value, index }, i) => {
+        value.split("").map( num => {
+            let rep = false
+            for(let x = 0; x < blanks.length; x++)
+            {
+                if(x == i) continue
+                if(blanks[x].value.includes(num))
+                {
+                    rep = true
+                    break
+                }
+            }
+
+            if(!rep)
+            {
+                blanks[i].value = num
+                newRow[index] = num
+            }
+        })
+    })
+    return newRow
+
+}
+
