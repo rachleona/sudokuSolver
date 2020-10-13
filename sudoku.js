@@ -283,3 +283,16 @@ const findUnique = row => {
 
 }
 
+const getPositionObjects = sudoku => {
+    const res =  sudoku.map( (row, rowNum) => {
+        return row.map( (val, colNum) => {
+            return {
+                value: val,
+                row: rowNum, 
+                column: colNum, 
+                palace: Math.floor(colNum / 3) + 3 * Math.floor(rowNum / 3)
+            }
+        })
+    })
+    return res.reduce( (final, row) => [...final, ...row], [])
+}
