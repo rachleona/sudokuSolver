@@ -1,8 +1,20 @@
 const randomIndex = array => Math.floor(Math.random()*array.length)
 const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
+const sudokuSolver = sud => {
+    const input = getPositionObjects(sud)
+    const output = solve(input)
+
+    const res = [...Array(9).keys()].map( n => [] )
+    output.map( ({ row, column, value }) => {
+        res[row][column] = value
+    })
+
+    return res
+}
+
 const solve = sudoku => {
-    let { s, d } = checkPossibles(sudoku)
+    let { s, d } = possibles(sudoku)
     if(d)
     {
         return s
