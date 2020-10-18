@@ -188,25 +188,10 @@ const unique = row => {
     return newRow
 }
 
-const deepCompare = (arr1, arr2) => {
-    let res = true
-    let count = 0;
-
-    while(res && count < arr1.length)
-    {
-        const diff = arr1[count].some( (val, i) => {
-            return val != arr2[count][i]
-        })
-
-        if(diff)
-        {
-            res = false
-        }
-
-        count++
-    }
-
-    return res
+const deepCompare = (a, b) => {
+    return !a.some( (v, i) => {
+        return b[i].value !== v.value
+    })
 }
 
 const getPositionObjects = sudoku => {
