@@ -155,6 +155,13 @@ const possibles = sudoku => {
         newSudoku = extract(extract(extract(newSudoku, "row", unique), "column", unique), "palace", unique)
         done = deepCompare(newSudoku, sudoku)
     }
+    
+    // done with find unique logic, go to regional elimination logic
+    if(done)
+    {
+        newSudoku = regional(newSudoku)
+        done = deepCompare(newSudoku, sudoku)
+    }
 
     return { s: newSudoku, d: done }
 }
@@ -218,4 +225,84 @@ const getPositionObjects = sudoku => {
         })
     })
     return res.reduce( (final, row) => [...final, ...row], [])
+}
+
+const regional = sud => {
+    const newSudoku = sud.map( ({ value, row, column, palace }) => { return { value, row, column, palace}} )
+
+    for(let x = 0; x < newSudoku.length; x++)
+    {
+        const { value, row, column, palace } = newSudoku[x]
+        if(typeof value !== "string") continue
+
+        let thisRow = sud.filter( v => v.row === row && typeof v.value === "string")
+        let thisCol = sud.filter( v => v.column === column && typeof v.value === "string")
+        let thisPal = sud.filter( v => v.palace === palace  && typeof v.value === "string")
+
+        value.split("")
+        .map( n => {
+            // process palace first
+            let commonPosibility = thisPal.filter( v => v.value.split("").includes(n) )
+            if(commonPosibility.every( v => v.row === row ))
+            {
+                thisRow = thisRow.map( v => 
+                    v.palace === palace ? v : 
+                    { 
+                        ...v, 
+                        value: v.value.split("").filter( num => num !== n ).join("") 
+                    }
+                )
+            }
+            else if(commonPosibility.every( v => v.row === row ))
+            {
+                thisCol = thisCol.map( v => 
+                    v.palace === palace ? v : 
+                    { 
+                        ...v, 
+                        value: v.value.split("").filter( num => num !== n ).join("") 
+                    }
+                )
+            }
+
+            // process row 
+            commonPosibility = thisRow.filter( v => v.value.split("").includes(n) )
+            if(commonPosibility.every( v => v.palace === palace ))
+            {
+                thisPal = thisPal.map( v => 
+                    v.row === row ? v : 
+                    { 
+                        ...v, 
+                        value: v.value.split("").filter( num => num !== n ).join("") 
+                    }
+                )
+            }
+
+            // process column 
+            commonPosibility = thisCol.filter( v => v.value.split("").includes(n) )
+            if(commonPosibility.every( v => v.palace === palace ))
+            {
+                thisPal = thisPal.map( v => 
+                    v.row === row ? v : 
+                    { 
+                        ...v, 
+                        value: v.value.split("").filter( num => num !== n ).join("") 
+                    }
+                )
+            }
+
+        })
+        
+        const newStuff = [...thisCol, ...thisRow, ...thisPal]
+
+        newStuff.map( ({v, r, c, p}) => {
+            newSudoku[r * 9 + c] = { 
+                value: v,
+                row: r,
+                column: c,
+                palace: p
+            }
+        })
+    }
+
+    return newSudoku
 }
