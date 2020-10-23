@@ -1,16 +1,23 @@
 const randomIndex = array => Math.floor(Math.random()*array.length)
 const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
+// main solver tool, calls other utility functions
+// recursion without fear of stack overflow!
 const sudokuSolver = sud => {
+    // turns two dimensional array into one dimensional
+    // new array presents data as position objects with value, row, column and palace info
     const input = getPositionObjects(sud)
+    // solve with basic logic
     let output = solve(input)
-
+    
+    // if there are still unsolved parts, start guessing
+    // i.e. backtracking algo starts
     while(!output.every( v => typeof v.value === "number" ))
     {
         output = guess(output)
-        output = solve(output)
     }
-
+    
+    // format result back to matrix 
     const res = [...Array(9).keys()].map( n => [] )
     output.map( ({ row, column, value }) => {
         res[row][column] = value
@@ -19,6 +26,7 @@ const sudokuSolver = sud => {
     return res
 }
 
+// caller function to employ logic recursively without fear of stack overflow
 const solve = sudoku => {
     let { s, d } = possibles(sudoku)
     if(d)
@@ -31,6 +39,7 @@ const solve = sudoku => {
     }
 }
 
+// basic logic, check row/column/palace individually
 const check = row => {
     const newRow = []
     row.map( content => {
@@ -134,6 +143,7 @@ const check = row => {
     return newRow
 }
 
+// extract row/column/palace to form one array of 9 items and run func on it
 const extract = (sud, key, func) => {
     const newSud = []
     for(let i = 0; i < 9; i++)
@@ -148,11 +158,15 @@ const extract = (sud, key, func) => {
     return newSud
 }
 
+// external caller function to lower stack size for solve() 
+// narrows down for possibilities of each row/column/palace
+// then finds unique possiblities and apply them
+// then check inter-regional contradictions 
 const possibles = sudoku => {
     // basic possibility elimination logic on each row, column and palace
     let newSudoku = extract(extract(extract(sudoku, "row", check), "column", check), "palace", check)
 
-    // if not further elimination was possible, then elimination process is done for now
+    // if no further elimination was possible, then basic elimination process is done for now
     let done = deepCompare(newSudoku, sudoku)
 
     // if done, further logic, else continue elimination logic
@@ -172,6 +186,7 @@ const possibles = sudoku => {
     return { s: newSudoku, d: done }
 }
 
+// find unique possibilities in a row/column/palace
 const unique = row => {
     const newRow = [...row]
 
@@ -213,12 +228,14 @@ const unique = row => {
     return newRow
 }
 
+// compare two sudokus to see if logic is exhausted
 const deepCompare = (a, b) => {
     return !a.some( (v, i) => {
         return b[i].value !== v.value
     })
 }
 
+// convert sudoku matrix into one dimensional array of position objects
 const getPositionObjects = sudoku => {
     const res =  sudoku.map( (row, rowNum) => {
         return row.map( (val, colNum) => {
@@ -233,6 +250,7 @@ const getPositionObjects = sudoku => {
     return res.reduce( (final, row) => [...final, ...row], [])
 }
 
+// inter-regional elimination logic
 const regional = sud => {
     const newSudoku = sud.map( ({ value, row, column, palace }) => { return { value, row, column, palace}} )
 
@@ -313,6 +331,7 @@ const regional = sud => {
     return newSudoku
 }
 
+// backtracking logic
 const guess = sud => {
     const cur = sud.find( v => typeof v.value !== "number" )
     const pos =  cur.value.split("").map( v => parseInt(v) )
