@@ -3,7 +3,13 @@ const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 const sudokuSolver = sud => {
     const input = getPositionObjects(sud)
-    const output = solve(input)
+    let output = solve(input)
+
+    while(!output.every( v => typeof v.value === "number" ))
+    {
+        output = guess(output)
+        output = solve(output)
+    }
 
     const res = [...Array(9).keys()].map( n => [] )
     output.map( ({ row, column, value }) => {
@@ -305,4 +311,28 @@ const regional = sud => {
     }
 
     return newSudoku
+}
+
+const guess = sud => {
+    const cur = sud.find( v => typeof v.value !== "number" )
+    const pos =  cur.value.split("").map( v => parseInt(v) )
+    for(let x = 0; x < pos.length; x++)
+    {
+        sud[cur.row * 9 + cur.column].value = pos[x]
+        let res = possibles(sud)
+        while(!res.d)
+        {
+            res = possibles(res.s)
+        }
+
+        if(res.s.find( v => v.value == ''))
+        {
+            sud[cur.row][cur.column] = cur.value
+            continue
+        }
+        else
+        {
+            return res.s
+        }
+    }
 }
