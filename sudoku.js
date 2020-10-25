@@ -277,7 +277,7 @@ const regional = sud => {
                     }
                 )
             }
-            else if(commonPosibility.every( v => v.row === row ))
+            else if(commonPosibility.every( v => v.column === column ))
             {
                 thisCol = thisCol.map( v => 
                     v.palace === palace ? v : 
@@ -306,7 +306,7 @@ const regional = sud => {
             if(commonPosibility.every( v => v.palace === palace ))
             {
                 thisPal = thisPal.map( v => 
-                    v.row === row ? v : 
+                    v.column === column ? v : 
                     { 
                         ...v, 
                         value: v.value.split("").filter( num => num !== n ).join("") 
@@ -318,7 +318,7 @@ const regional = sud => {
         
         const newStuff = [...thisCol, ...thisRow, ...thisPal]
 
-        newStuff.map( ({v, r, c, p}) => {
+        newStuff.map( ({value: v, row: r, column: c, palace: p}) => {
             newSudoku[r * 9 + c] = { 
                 value: v,
                 row: r,
