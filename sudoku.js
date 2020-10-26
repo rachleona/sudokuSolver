@@ -345,14 +345,16 @@ const guess = sud => {
             res = possibles(res.s)
         }
 
-        if(res.s.find( v => v.value == '') || !isSafe(res.s))
+        if(res.s.find( v => v.value == ''))
         {
             sud[cur.row * 9 + cur.column].value = val
             continue
         }
         else if(res.s.every( v => typeof v.value === "number"))
         {
-            return res.s
+            if(isSafe(res.s)) return res.s
+            sud[cur.row * 9 + cur.column].value = val
+            continue
         }
         else
         {
