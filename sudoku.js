@@ -259,9 +259,9 @@ const regional = sud => {
         const { value, row, column, palace } = newSudoku[x]
         if(typeof value !== "string") continue
 
-        let thisRow = sud.filter( v => v.row === row && typeof v.value === "string")
-        let thisCol = sud.filter( v => v.column === column && typeof v.value === "string")
-        let thisPal = sud.filter( v => v.palace === palace  && typeof v.value === "string")
+        let thisRow = newSudoku.filter( v => v.row === row && typeof v.value === "string")
+        let thisCol = newSudoku.filter( v => v.column === column && typeof v.value === "string")
+        let thisPal = newSudoku.filter( v => v.palace === palace  && typeof v.value === "string")
 
         value.split("")
         .map( n => {
@@ -334,6 +334,7 @@ const regional = sud => {
 // backtracking logic
 const guess = sud => {
     const cur = sud.find( v => typeof v.value !== "number" )
+    const val = cur.value
     const pos =  cur.value.split("").map( v => parseInt(v) )
     for(let x = 0; x < pos.length; x++)
     {
@@ -344,14 +345,40 @@ const guess = sud => {
             res = possibles(res.s)
         }
 
-        if(res.s.find( v => v.value == ''))
+        if(res.s.find( v => v.value == '') || !isSafe(res.s))
         {
-            sud[cur.row][cur.column] = cur.value
+            sud[cur.row * 9 + cur.column].value = val
             continue
         }
-        else
+        else if(res.s.every( v => typeof v.value === "number"))
         {
             return res.s
         }
+        else
+        {
+            res = guess(res.s)
+            if(!res)
+            {
+                continue
+            }
+            return res
+        }
     }
+    return false
+}
+
+// double checking for invalid solutions
+const isSafe = (sud, keys=["row", "column", "palace"]) => {
+    return !keys.some( key => {
+        //create one dimensional array
+        for(let i = 0; i < 9; i++)
+        {
+            let arr = sud.filter( v => v[key] === i ).map( v => v.value )
+            arr = new Set(arr)
+            if(arr.size !== 9)
+            {
+                return true
+            }
+        }
+    })
 }
