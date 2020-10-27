@@ -188,8 +188,10 @@ const possibles = sudoku => {
 
 // find unique possibilities in a row/column/palace
 const unique = row => {
-    const newRow = [...row]
+    // make copy of row
+    const newRow = row.map( v => v )
 
+    // get unsolved squares ( ones that are not numbers )
     const blanks = row.map( (v, i) => {
         if(typeof v.value === "string")
         {
@@ -202,11 +204,15 @@ const unique = row => {
 
     blanks.map( ({ v, index}, i) => {
         const { value } = v
+        
+        // check each possibility to see if there are unique ones
+        // if a number is only possible in one square, then that must be the solution to that square
         value.split("").map( num => {
             let rep = false
             for(let x = 0; x < blanks.length; x++)
             {
                 if(x == i) continue
+                // if any of the same row has this possibility, then not unique and break
                 if(blanks[x].v.value.includes(num))
                 {
                     rep = true
@@ -252,21 +258,34 @@ const getPositionObjects = sudoku => {
 
 // inter-regional elimination logic
 const regional = sud => {
+    // make copy of sud
     const newSudoku = sud.map( ({ value, row, column, palace }) => { return { value, row, column, palace}} )
-
+    
+    // for each square
     for(let x = 0; x < newSudoku.length; x++)
     {
+        // initialise basic info
         const { value, row, column, palace } = newSudoku[x]
+        // if current is solved, move on
         if(typeof value !== "string") continue
-
+        
+        // filter to get all the values in the same region (row, column, palace)
+        // that are also unsolved
+        // solved ones don't need to be considered because the possibilities would have
+        // been eliminated in check() anyway
         let thisRow = newSudoku.filter( v => v.row === row && typeof v.value === "string")
         let thisCol = newSudoku.filter( v => v.column === column && typeof v.value === "string")
         let thisPal = newSudoku.filter( v => v.palace === palace  && typeof v.value === "string")
-
+    
         value.split("")
         .map( n => {
             // process palace first
             let commonPosibility = thisPal.filter( v => v.value.split("").includes(n) )
+            // e.g. if all the squares that might be 3 in this palace are all in the same row
+            // then the 3 of this row must be in this palace, so all squares in that row that 
+            // is not in this palace cannot bee three
+            // by this logic eliminate 3 from possiblities of all other squares of this row
+            // same logic applies for each block below
             if(commonPosibility.every( v => v.row === row ))
             {
                 thisRow = thisRow.map( v => 
@@ -316,6 +335,7 @@ const regional = sud => {
 
         })
         
+        // put all the stuff into one array then add them back to newSudoku
         const newStuff = [...thisCol, ...thisRow, ...thisPal]
 
         newStuff.map( ({value: v, row: r, column: c, palace: p}) => {
