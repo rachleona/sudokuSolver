@@ -353,39 +353,56 @@ const regional = sud => {
 
 // backtracking logic
 const guess = sud => {
+    // find the first instance of an unsolved square
     const cur = sud.find( v => typeof v.value !== "number" )
+    // save initial value
     const val = cur.value
     const pos =  cur.value.split("").map( v => parseInt(v) )
+    
+    // iterate over each possible value
     for(let x = 0; x < pos.length; x++)
     {
+        // let's pretend that pos[x] is the correct value for this square
         sud[cur.row * 9 + cur.column].value = pos[x]
+        
+        // try solving it with this value
         let res = possibles(sud)
         while(!res.d)
         {
             res = possibles(res.s)
         }
-
+    
+        // if there are any squares that cannot be filled then this value is wrong, backtrack and try next possible value
         if(res.s.find( v => v.value == ''))
         {
             sud[cur.row * 9 + cur.column].value = val
             continue
         }
+        // if every value is a number
         else if(res.s.every( v => typeof v.value === "number"))
         {
+            // and is a valid solution, then this is the answer
             if(isSafe(res.s)) return res.s
+            // else backtrack and try next possible value
             sud[cur.row * 9 + cur.column].value = val
             continue
         }
+        // no impossible squares and not yet solved
         else
         {
+            // guess again
             res = guess(res.s)
+            // if cannot be solved, backtrack and try next possible value
             if(!res)
             {
                 continue
             }
+            // else this is the answer
             return res
         }
     }
+    
+    // none of the possible values work, therefore cannot be solved
     return false
 }
 
@@ -396,6 +413,7 @@ const isSafe = (sud, keys=["row", "column", "palace"]) => {
         for(let i = 0; i < 9; i++)
         {
             let arr = sud.filter( v => v[key] === i ).map( v => v.value )
+            // set values must be unique, so if set length is not then, there must have been repetition of a number
             arr = new Set(arr)
             if(arr.size !== 9)
             {
