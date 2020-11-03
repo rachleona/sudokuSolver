@@ -1,5 +1,5 @@
 # sudokuSolver
-Simple JS algorithm to solve sudokus presented as two dimensional matrix
+Partial backtracking JS algorithm to solve sudokus presented as two dimensional matrix
 
 <hr>
 
@@ -30,3 +30,5 @@ Present sudoku as two dimensional array of numbers and '' as blank.
      [1, 5, 3, 7, 9, 2, 6, 8, 4],
      [8, 4, 2, 6, 3, 1, 5, 7, 9]]*/
 ```
+
+Any suggestion on better efficiency/code structure or anything will be appreciated!
